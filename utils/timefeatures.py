@@ -131,4 +131,7 @@ def time_features_from_frequency_str(freq_str: str) -> List[TimeFeature]:
 
 
 def time_features(dates, freq='h'):
+    # np.vstack stack up the arrays vertically
+    # time_features_from_frequency_str(freq) returns a list of time features. When freq=h, the result is HourOfDay, DayOfWeek, DayOfMonth, DayOfYear
+    # So this function stack up all the features(HourOfDay, DayOfWeek, DayOfMonth, DayOfYear) vertically
     return np.vstack([feat(dates) for feat in time_features_from_frequency_str(freq)])

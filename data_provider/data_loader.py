@@ -284,6 +284,7 @@ class Dataset_Custom(Dataset):
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
 
+    # transform the data back to origianl values
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
     

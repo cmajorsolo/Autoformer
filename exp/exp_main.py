@@ -11,6 +11,7 @@ from torch import optim
 
 import os
 import time
+import logging
 
 import warnings
 import matplotlib.pyplot as plt
@@ -18,6 +19,8 @@ import numpy as np
 
 warnings.filterwarnings('ignore')
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+logger = logging.getLogger(__name__)
 
 class Exp_Main(Exp_Basic):
     def __init__(self, args):
@@ -93,7 +96,9 @@ class Exp_Main(Exp_Basic):
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
 
-        path = os.path.join(self.args.checkpoints, setting)
+        logger.info('setting is {}'.format(setting))
+        path = os.path.join(self.args.sm_model_dir, self.args.checkpoints, setting)
+        logger.info('save model to {}'.format(path))
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -183,19 +188,21 @@ class Exp_Main(Exp_Basic):
             adjust_learning_rate(model_optim, epoch + 1, self.args)
 
         best_model_path = path + '/' + 'checkpoint.pth'
+        logger.info('loading model from {}'.format(best_model_path))
         self.model.load_state_dict(torch.load(best_model_path))
-
         return self.model
 
     def test(self, setting, test=0):
         test_data, test_loader = self._get_data(flag='test')
+        logger.info('Testing: sm_model_dir is {}'.format(self.args.sm_model_dir))
         if test:
-            print('loading model')
-            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+            logger.info('Testing: loading model from {}'.format(self.args.sm_model_dir + '/checkpoints/' + setting + 'checkpoint.pth'))
+            self.model.load_state_dict(torch.load(os.path.join(self.args.sm_model_dir + '/checkpoints/' + setting, 'checkpoint.pth')))
 
         preds = []
         trues = []
-        folder_path = './test_results/' + setting + '/'
+        folder_path = os.path.join(self.args.sm_model_dir, './test_results/', setting)
+        logger.info('Testing: Test result will be saved into folder {}'.format(folder_path))
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -250,7 +257,10 @@ class Exp_Main(Exp_Basic):
         print('test shape:', preds.shape, trues.shape)
 
         # result save
-        folder_path = './results/' + setting + '/'
+        # Use below path when training on AWS sagemaker
+        folder_path = os.path.join(self.args.sm_model_dir, './results/', setting)
+        logger.info('Testing: Result will be saved into folder {}'.format(folder_path))
+        # folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -273,7 +283,8 @@ class Exp_Main(Exp_Basic):
         pred_data, pred_loader = self._get_data(flag='pred')
 
         if load:
-            path = os.path.join(self.args.checkpoints, setting)
+            path = os.path.join(self.args.sm_model_dir, self.args.checkpoints, setting)
+            logger.info('loading model from {}'.format(path))
             best_model_path = path + '/' + 'checkpoint.pth'
             self.model.load_state_dict(torch.load(best_model_path))
 
@@ -309,7 +320,8 @@ class Exp_Main(Exp_Basic):
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
 
         # result save
-        folder_path = './results/' + setting + '/'
+        folder_path = os.path.join(self.args.sm_model_dir, './predResults/', setting)
+        logger.info('Preding: Pred result will be saved into folder {}'.format(folder_path))
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
