@@ -209,6 +209,7 @@ class Exp_Main(Exp_Basic):
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+                logger.info('Testing: testing on batch i={}'.format(i))
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float().to(self.device)
 
@@ -289,12 +290,15 @@ class Exp_Main(Exp_Basic):
             self.model.load_state_dict(torch.load(best_model_path))
 
         preds = []
+        trues = []
 
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(pred_loader):
+                logger.info('Preding: preding on batch i={}'.format(i))
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
+                logger.info('Preding: batch_y shape={}'.format(batch_y.shape))
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
 
@@ -315,9 +319,14 @@ class Exp_Main(Exp_Basic):
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
                 pred = outputs.detach().cpu().numpy()  # .squeeze()
                 preds.append(pred)
+                true = batch_y  # batch_y.detach().cpu().numpy()  # .squeeze()
+                trues.append(true)
 
         preds = np.array(preds)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+        trues = np.array(trues)
+        trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
+      
 
         # result save
         folder_path = os.path.join(self.args.sm_model_dir, './predResults/', setting)
@@ -326,5 +335,19 @@ class Exp_Main(Exp_Basic):
             os.makedirs(folder_path)
 
         np.save(folder_path + 'real_prediction.npy', preds)
+        np.save(folder_path + 'real_true.npy', trues)
 
+        logger.info('Preding: Saving pred chart to {}'.format(folder_path))
+
+        if preds.shape[1]>trues.shape[1]:
+            preds = preds[:,:trues.shape[1], -1]
+            # get all the items of the last dimension
+            preds = preds[0, :]
+        elif preds.shape[1]<trues.shape[1] or preds.shape[1]==trues.shape[1]:
+            preds = preds[:,:, -1]
+            preds = preds[0, :]
+        trues = trues[:,:, -1]
+        trues = trues[0, :]
+
+        visual(trues, preds, os.path.join(folder_path, 'preds.pdf'))
         return

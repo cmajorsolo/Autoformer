@@ -15,21 +15,33 @@ def main():
     parser = argparse.ArgumentParser(description='Autoformer & Transformer family for Time Series Forecasting')
 
     # basic config
-    parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
-    parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='Autoformer',
+    # params are updated based on the params in scirpts/*.sh scripts
+    parser.add_argument('--is_training', type=int, default=1, help='status')
+    parser.add_argument('--model_id', type=str, default='BTC_96_96', help='model id')
+    parser.add_argument('--model', type=str, default='Transformer',
                         help='model name, options: [Autoformer, Informer, Transformer]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
-    parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
-    parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
+    parser.add_argument('--data', type=str, default='custom', help='dataset type')
+    # NOTE: uncomment below line when running locally
+    parser.add_argument('--root_path', type=str, default='./dataset/btc/', help='root path of the data file')
+    # NOTE: uncomment below line when running on sagemaker
+    # parser.add_argument('--root_path', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'), help='root path of the data file')
+    parser.add_argument('--data_name', type=str, default='btc_short', help='data file')
+    parser.add_argument('--data_path', type=str, default='btc_short.csv', help='data file')
+    #sm_model_dir: model artifacts stored here after training
+    # NOTE: uncomment below line when running on sagemaker
+    # parser.add_argument('--sm-model-dir', type=str, default=os.environ.get('SM_MODEL_DIR'))
+    parser.add_argument('--sm-model-dir', type=str, default='SM_MODEL_DIR')
+
     parser.add_argument('--features', type=str, default='M',
                         help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
-    parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-    parser.add_argument('--freq', type=str, default='h',
+    # NOTE: update below line with the target column
+    parser.add_argument('--target', type=str, default='Close', help='target feature in S or MS task')
+    # NOTE: update below line with the time feature encoding
+    parser.add_argument('--freq', type=str, default='t',
                         help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
-    parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
+    parser.add_argument('--checkpoints', type=str, default='checkpoints/', help='location of model checkpoints')
 
     # forecasting task
     parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
@@ -39,16 +51,18 @@ def main():
     # model define
     parser.add_argument('--bucket_size', type=int, default=4, help='for Reformer')
     parser.add_argument('--n_hashes', type=int, default=4, help='for Reformer')
-    parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
-    parser.add_argument('--dec_in', type=int, default=7, help='decoder input size')
-    parser.add_argument('--c_out', type=int, default=7, help='output size')
+    # NOTE: you want to update enc_in, dec_in, c_out number based on the number of features of your dataset
+    parser.add_argument('--enc_in', type=int, default=5, help='encoder input size')
+    parser.add_argument('--dec_in', type=int, default=5, help='decoder input size')
+    parser.add_argument('--c_out', type=int, default=5, help='output size')
+
     parser.add_argument('--d_model', type=int, default=512, help='dimension of model')
     parser.add_argument('--n_heads', type=int, default=8, help='num of heads')
     parser.add_argument('--e_layers', type=int, default=2, help='num of encoder layers')
     parser.add_argument('--d_layers', type=int, default=1, help='num of decoder layers')
     parser.add_argument('--d_ff', type=int, default=2048, help='dimension of fcn')
     parser.add_argument('--moving_avg', type=int, default=25, help='window size of moving average')
-    parser.add_argument('--factor', type=int, default=1, help='attn factor')
+    parser.add_argument('--factor', type=int, default=3, help='attn factor')
     parser.add_argument('--distil', action='store_false',
                         help='whether to use distilling in encoder, using this argument means not using distilling',
                         default=True)
@@ -57,16 +71,17 @@ def main():
                         help='time features encoding, options:[timeF, fixed, learned]')
     parser.add_argument('--activation', type=str, default='gelu', help='activation')
     parser.add_argument('--output_attention', action='store_true', help='whether to output attention in encoder')
-    parser.add_argument('--do_predict', action='store_true', help='whether to predict unseen future data')
+    parser.add_argument('--do_predict', action='store_true', default=True, help='whether to predict unseen future data')
 
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
-    parser.add_argument('--itr', type=int, default=2, help='experiments times')
-    parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
+    parser.add_argument('--itr', type=int, default=1, help='experiments times')
+    parser.add_argument('--train_epochs', type=int, default=1, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
+    # NOTE: you may want to update the patience value
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
-    parser.add_argument('--des', type=str, default='test', help='exp description')
+    parser.add_argument('--des', type=str, default='Exp', help='exp description')
     parser.add_argument('--loss', type=str, default='mse', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
@@ -98,7 +113,7 @@ def main():
             setting = '{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_fc{}_eb{}_dt{}_{}_{}'.format(
                 args.model_id,
                 args.model,
-                args.data,
+                args.data_name,
                 args.features,
                 args.seq_len,
                 args.label_len,
@@ -112,6 +127,9 @@ def main():
                 args.embed,
                 args.distil,
                 args.des, ii)
+
+            print('>>>>>>> data rooth path : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(args.root_path))
+            print('>>>>>>> data file path : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(args.data_path))
 
             exp = Exp(args)  # set experiments
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
