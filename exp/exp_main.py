@@ -266,7 +266,7 @@ class Exp_Main(Exp_Basic):
             os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
+        logger.info('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
         f = open("result.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
