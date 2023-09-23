@@ -340,11 +340,11 @@ class Exp_Main(Exp_Basic):
         logger.info('Preding: Saving pred chart to {}'.format(folder_path))
 
         if preds.shape[1]>trues.shape[1]:
-            preds = preds[:,:trues.shape[1], -1]
-            # get all the items of the last dimension
+            # get all the items of the second last dimension - in our btc dataset, the close price is the 2nd last colum of the data frame
+            preds = preds[:,:trues.shape[1], -2]
             preds = preds[0, :]
         elif preds.shape[1]<trues.shape[1] or preds.shape[1]==trues.shape[1]:
-            preds = preds[:,:, -1]
+            preds = preds[:,:, -2]
             preds = preds[0, :]
         trues = trues[:,:, -1]
         trues = trues[0, :]
