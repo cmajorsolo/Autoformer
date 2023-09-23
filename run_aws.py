@@ -17,7 +17,7 @@ def main():
     # basic config
     # params are updated based on the params in scirpts/*.sh scripts
     parser.add_argument('--is_training', type=int, default=1, help='status')
-    parser.add_argument('--model_id', type=str, default='Exchange_96_96', help='model id')
+    parser.add_argument('--model_id', type=str, default='BTC_96_96', help='model id')
     parser.add_argument('--model', type=str, default='Transformer',
                         help='model name, options: [Autoformer, Informer, Transformer]')
 
@@ -27,7 +27,7 @@ def main():
     # parser.add_argument('--root_path', type=str, default='./dataset/exchange_rate/', help='root path of the data file')
     # NOTE: uncomment below line when running on sagemaker
     parser.add_argument('--root_path', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'), help='root path of the data file')
-    parser.add_argument('--data_path', type=str, default='exchange_rate_short.csv', help='data file')
+    parser.add_argument('--data_path', type=str, default='BTC_full_1day.csv', help='data file')
     #sm_model_dir: model artifacts stored here after training
     # NOTE: uncomment below line when running on sagemaker
     parser.add_argument('--sm-model-dir', type=str, default=os.environ.get('SM_MODEL_DIR'))
@@ -35,8 +35,8 @@ def main():
 
     parser.add_argument('--features', type=str, default='M',
                         help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
-    parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-    parser.add_argument('--freq', type=str, default='h',
+    parser.add_argument('--target', type=str, default='Close', help='target feature in S or MS task')
+    parser.add_argument('--freq', type=str, default='d',
                         help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
     parser.add_argument('--checkpoints', type=str, default='checkpoints/', help='location of model checkpoints')
 
@@ -48,9 +48,9 @@ def main():
     # model define
     parser.add_argument('--bucket_size', type=int, default=4, help='for Reformer')
     parser.add_argument('--n_hashes', type=int, default=4, help='for Reformer')
-    parser.add_argument('--enc_in', type=int, default=8, help='encoder input size')
-    parser.add_argument('--dec_in', type=int, default=8, help='decoder input size')
-    parser.add_argument('--c_out', type=int, default=8, help='output size')
+    parser.add_argument('--enc_in', type=int, default=5, help='encoder input size')
+    parser.add_argument('--dec_in', type=int, default=5, help='decoder input size')
+    parser.add_argument('--c_out', type=int, default=5, help='output size')
     parser.add_argument('--d_model', type=int, default=512, help='dimension of model')
     parser.add_argument('--n_heads', type=int, default=8, help='num of heads')
     parser.add_argument('--e_layers', type=int, default=2, help='num of encoder layers')
@@ -71,7 +71,7 @@ def main():
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
-    parser.add_argument('--train_epochs', type=int, default=1, help='train epochs')
+    parser.add_argument('--train_epochs', type=int, default=30, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')

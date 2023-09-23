@@ -173,19 +173,36 @@ class Exp_Main(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
-            print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
+            curr_epoch = epoch + 1
+            epoch_train_time = time.time() - epoch_time
+            print("Epoch: {} cost time: {}".format(curr_epoch, epoch_train_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
-                epoch + 1, train_steps, train_loss, vali_loss, test_loss))
+                curr_epoch, train_steps, train_loss, vali_loss, test_loss))
+            # save train time, train loss, vali loss, test loss to file
+            folder_path = os.path.join(self.args.sm_model_dir, './train/', setting)
+            logger.info('Testing: Test result will be saved into folder {}'.format(folder_path))
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            f = open(folder_path + "train_results.txt", 'a')
+            f.write(setting + "  \n")
+            f.write("Epoch: {} cost time: {}".format(curr_epoch, epoch_train_time))
+            f.write('\n')
+            f.write("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
+                curr_epoch, train_steps, train_loss, vali_loss, test_loss))
+            f.write('\n')
+            f.write('\n')
+            f.close()
+
             early_stopping(vali_loss, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
 
-            adjust_learning_rate(model_optim, epoch + 1, self.args)
+            adjust_learning_rate(model_optim, curr_epoch, self.args)
 
         best_model_path = path + '/' + 'checkpoint.pth'
         logger.info('loading model from {}'.format(best_model_path))
@@ -201,7 +218,7 @@ class Exp_Main(Exp_Basic):
 
         preds = []
         trues = []
-        folder_path = os.path.join(self.args.sm_model_dir, './test_results/', setting)
+        folder_path = os.path.join(self.args.sm_model_dir, './test/', setting)
         logger.info('Testing: Test result will be saved into folder {}'.format(folder_path))
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
@@ -259,7 +276,7 @@ class Exp_Main(Exp_Basic):
 
         # result save
         # Use below path when training on AWS sagemaker
-        folder_path = os.path.join(self.args.sm_model_dir, './results/', setting)
+        folder_path = os.path.join(self.args.sm_model_dir, './test/', setting)
         logger.info('Testing: Result will be saved into folder {}'.format(folder_path))
         # folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
@@ -267,7 +284,8 @@ class Exp_Main(Exp_Basic):
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         logger.info('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
-        f = open("result.txt", 'a')
+        f_path = os.path.join(self.args.sm_model_dir, './test/')
+        f = open(f_path + "metric_results.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
         f.write('\n')
@@ -318,8 +336,10 @@ class Exp_Main(Exp_Basic):
                     else:
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
                 pred = outputs.detach().cpu().numpy()  # .squeeze()
+                logger.info('Preding: pred shape={}'.format(pred.shape))
                 preds.append(pred)
-                true = batch_y  # batch_y.detach().cpu().numpy()  # .squeeze()
+                true = batch_y.detach().cpu().numpy()  # batch_y.detach().cpu().numpy()  # .squeeze()
+                logger.info('Preding: true shape={}'.format(true.shape))
                 trues.append(true)
 
         preds = np.array(preds)
@@ -329,7 +349,7 @@ class Exp_Main(Exp_Basic):
       
 
         # result save
-        folder_path = os.path.join(self.args.sm_model_dir, './predResults/', setting)
+        folder_path = os.path.join(self.args.sm_model_dir, './prediction/', setting)
         logger.info('Preding: Pred result will be saved into folder {}'.format(folder_path))
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
@@ -340,14 +360,31 @@ class Exp_Main(Exp_Basic):
         logger.info('Preding: Saving pred chart to {}'.format(folder_path))
 
         if preds.shape[1]>trues.shape[1]:
-            # get all the items of the second last dimension - in our btc dataset, the close price is the 2nd last colum of the data frame
+            print('Prediction: Preds shape is bigger than trues shape')
             preds = preds[:,:trues.shape[1], -2]
             preds = preds[0, :]
+            trues = trues[:,:, -2]
+            trues = trues[0, :]
         elif preds.shape[1]<trues.shape[1] or preds.shape[1]==trues.shape[1]:
+            print('Prediction: Preds shape is smaller than or equal to trues shape')
+            trues = trues[:,:preds.shape[1], -2]
+            trues = trues[0, :]
             preds = preds[:,:, -2]
             preds = preds[0, :]
-        trues = trues[:,:, -1]
-        trues = trues[0, :]
 
         visual(trues, preds, os.path.join(folder_path, 'preds.pdf'))
+
+        print('Prediction: Saving metrics ...')
+        mae, mse, rmse, mape, mspe = metric(preds, trues)
+        logger.info('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
+        f_path = os.path.join(self.args.sm_model_dir, './prediction/')
+        f = open(f_path + "metric_results.txt", 'a')
+        f.write(setting + "  \n")
+        f.write('mae:{}, mse:{}, rmse:{}, mape:{}, mspe:{}'.format(mae, mse, rmse, mape, mspe))
+        f.write('\n')
+        f.write('\n')
+        f.close()
+
+        np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+        print('Prediction: Finished')
         return

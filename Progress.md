@@ -23,7 +23,6 @@
     - Transformer 2017 --- Done 
 9. Overall test steps: 
     - Train the model with the best params for each model 
-        - metircs: mse and mae 
         - Tunning: 
             - params: 
                 - what params should be applied on the BTC datasets? 
@@ -42,11 +41,11 @@
                     | patch length| Unknown| [8, 16]|
                     
                     PatchTST: for a very small datasets (ILI, ETTh1, ETTh2), a reduced size of parameters is used (H = 4, D = 16 and F = 128) to mitigate the possible overfitting
-                - Qustion: How to define small datasets here? 
-                - shoudl the params be different depends on the granuarity of the data? 
+                    - Qustion: How to define small datasets in PatchTST's perspective? 
+                        - The dataset PatchTST used is Electricity (26k rows), Weather (52k rows), traffic (17k rows), ETTh1 and ETTh2 (17k rows). Len=20k is a threshold for defining big/small dataset. 
             - details: 
                 - Pyraformer: DataLoader: line139 - the orignal code has wrong time encoding frequency. Should be h instead of m 
-
+        - metircs: mse and mae 
     - Pred piece of data using the trained model 
         - Data to collect: 
             - plot pred and true 
