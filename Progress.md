@@ -50,5 +50,26 @@
         - Data to collect: 
             - plot pred and true 
             - record pred time
-
+10. | Model | data type | input size - output size |
+    |---------|---------|---------|
+    | Transformer| daily data|96-336 |
+    | Transformer| 1hr data| 96-336 |
+    | Transformer| 30min data| 96-336 |
+    | Transformer| 5min data| 96-336 |
+    | Informer| daily data|96-336 |
+    | Informer| 1hr data| 96-336 |
+    | Informer| 30min data| 96-336 |
+    | Informer| 5min data| 96-336 |
+    | Autoformer| daily data|96-336 |
+    | Autoformer| 1hr data| 96-336 |
+    | Autoformer| 30min data| 96-336 |
+    | Autoformer| 5min data| 96-336 |
+    | Reformer| daily data|96-336 |
+    | Reformer| 1hr data| 96-336 |
+    | Reformer| 30min data| 96-336 |
+    | Reformer| 5min data| 96-336 |
+    | PatchTST| daily data|96-336 |
+    | PatchTST| 1hr data| 96-336 |
+    | PatchTST| 30min data| 96-336 |
+    | PatchTST| 5min data| 96-336 |
 
