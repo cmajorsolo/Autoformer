@@ -50,26 +50,156 @@
         - Data to collect: 
             - plot pred and true 
             - record pred time
-10. | Model | data type | input size - output size |
-    |---------|---------|---------|
-    | Transformer| daily data|96-336 |
-    | Transformer| 1hr data| 96-336 |
-    | Transformer| 30min data| 96-336 |
-    | Transformer| 5min data| 96-336 |
-    | Informer| daily data|96-336 |
-    | Informer| 1hr data| 96-336 |
-    | Informer| 30min data| 96-336 |
-    | Informer| 5min data| 96-336 |
-    | Autoformer| daily data|96-336 |
-    | Autoformer| 1hr data| 96-336 |
-    | Autoformer| 30min data| 96-336 |
-    | Autoformer| 5min data| 96-336 |
-    | Reformer| daily data|96-336 |
-    | Reformer| 1hr data| 96-336 |
-    | Reformer| 30min data| 96-336 |
-    | Reformer| 5min data| 96-336 |
-    | PatchTST| daily data|96-336 |
-    | PatchTST| 1hr data| 96-336 |
-    | PatchTST| 30min data| 96-336 |
-    | PatchTST| 5min data| 96-336 |
+10. Tests run on BTC data
+    <table>
+    <tr>
+        <td>Model</td>
+        <td>input size - output size</td>
+        <td>data type</td>
+    </tr>
+    <tr>
+        <td rowspan="4">Transformer</td>
+        <td rowspan="4">96-336</td>
+        <td>daily data</td>
+    </tr>
+    <tr>
+        <td>1hr data</td>
+    </tr>
+    <tr>
+        <td>30min data</td>
+    </tr>
+    <tr>
+        <td>5min data</td>
+    </tr>
+    <tr>
+        <td rowspan="4">Informer</td>
+        <td rowspan="4">96-336</td>
+        <td>daily data</td>
+    </tr>
+    <tr>
+        <td>1hr data</td>
+    </tr>
+    <tr>
+        <td>30min data</td>
+    </tr>
+    <tr>
+        <td>5min data</td>
+    </tr>
+    <tr>
+        <td rowspan="4">Autoformer</td>
+        <td rowspan="4">96-336</td>
+        <td>daily data</td>
+    </tr>
+    <tr>
+        <td>1hr data</td>
+    </tr>
+    <tr>
+        <td>30min data</td>
+    </tr>
+    <tr>
+        <td>5min data</td>
+    </tr>
+    <tr>
+        <td rowspan="4">Reformer</td>
+        <td rowspan="4">96-336</td>
+        <td>daily data</td>
+    </tr>
+    <tr>
+        <td>1hr data</td>
+    </tr>
+    <tr>
+        <td>30min data</td>
+    </tr>
+    <tr>
+        <td>5min data</td>
+    </tr>
+    <tr>
+        <td rowspan="4">PatchTST</td>
+        <td rowspan="4">96-336</td>
+        <td>daily data</td>
+    </tr>
+    <tr>
+        <td>1hr data</td>
+    </tr>
+    <tr>
+        <td>30min data</td>
+    </tr>
+    <tr>
+        <td>5min data</td>
+    </tr>
+    </table>
 
+## Next after Oct meet up: 
+1. More model runs: 
+    - Follow the other Former papers to do the following runs: 
+        - look-back window & forecasting horizon: <b> 96: 96, 192, 336, 720 </b>
+    - Pick a TS length for running the test for 1min data: <b> pick a date range and then use the date range to trunck the dataset </b>
+        - The full 1min dataset is too expensive to test on.  1 run cost more than 24hrs and 400euros on AWS. 
+        - Tried to pick the lastest 20k rows of datasets for all the datasets. The coefficient of variation (CV) value shows that 5min dataset is less volatie than 30min dataset. So simply picking the latest x number of rows of data can not reflect the real volatieties in the datasets. 
+        - Date range picked: 
+            <br> Date range: 2019-12-04 - 2023-05-07 </br>
+            <table>
+                <tr>
+                    <td>Data Type</td>
+                    <td>Data Length</td>
+                    <td>Coefficient of Variantion</td>
+                </tr>
+                <tr>
+                    <td>1hr</td>
+                    <td>30,000</td>
+                    <td>0.5867397316818509</td>
+                </tr>
+                <tr>
+                    <td>30min</td>
+                    <td>59,995</td>
+                    <td>0.5874570516249259</td>
+                </tr>
+                <tr>
+                    <td>5min</td>
+                    <td>359,961</td>
+                    <td>0.5874634333005645</td>
+                </tr>
+                <tr>
+                    <td>1min</td>
+                    <td>1,799,669</td>
+                    <td>0.587479701609147</td>
+                </tr>
+            </table>
+
+            <br> Date range: 2021-01-24 - 2023-05-07 </br>
+            <table>
+                <tr>
+                    <td>Data Type</td>
+                    <td>Data Length</td>
+                    <td>Coefficient of Variantion</td>
+                </tr>
+                <tr>
+                    <td>1hr</td>
+                    <td>20,000</td>
+                    <td>0.38709920725934677</td>
+                </tr>
+                <tr>
+                    <td>30min</td>
+                    <td>39,998</td>
+                    <td>0.3871035153233582</td>
+                </tr>
+                <tr>
+                    <td>5min</td>
+                    <td>239,974</td>
+                    <td>0.38709531593582147</td>
+                </tr>
+                <tr>
+                    <td>1min</td>
+                    <td>1,199,730</td>
+                    <td>0.3870864315034914</td>
+                </tr>
+            </table>
+    - What measurement can be used to tell how volatile a dataset is? coefficient of variation (CV) 
+        
+2. Answer the questions: 
+    - why PatchTST stop performing better in more granular data - more noise in more granular dataset
+3. Models & Methods that can be used to imporve the Former models: 
+    - In the existing Transformer variants, which ones are using Fourier Transform, Discrete Fourier Transform or Wavelet Transform? - FedFormer has applied Discrete Fourier Transform. 
+    - < A Multi-Scale Decomposition MLP-Mixer for Time Series Analysis >: Patch TST in different scales https://wx.zsxq.com/dweb2/index/topic_detail/211225181441511
+    - < Blockchain Transaction Fee Forecasting: A Comparison of Machine Learning Methods > - Wavelet to decompose the data; wavelet figures are of interest and can go in the paper.
+    - < Analysis of Cryptocurrency Commodities with Motifs and LSTM > - Motif to find small repeat patterns in data
