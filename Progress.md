@@ -195,11 +195,45 @@
                 </tr>
             </table>
     - What measurement can be used to tell how volatile a dataset is? coefficient of variation (CV) 
-        
-2. Answer the questions: 
-    - why PatchTST stop performing better in more granular data - more noise in more granular dataset
-3. Models & Methods that can be used to imporve the Former models: 
+2. Models & Methods that can be used to imporve the Former models: 
     - In the existing Transformer variants, which ones are using Fourier Transform, Discrete Fourier Transform or Wavelet Transform? - FedFormer has applied Discrete Fourier Transform. 
     - < A Multi-Scale Decomposition MLP-Mixer for Time Series Analysis >: Patch TST in different scales https://wx.zsxq.com/dweb2/index/topic_detail/211225181441511
+        - reducing white noise: MLP-Mixter is using a residual loss function to reduce the white noise. Autocorrelation coefficients is used to determine the level of the white noise in the dataset. 
+        - intra-channel, inter-patch and intra-patch information is captured to get global and local context information. 
+        - Difference between PatchTST and MLP Mixer.  
+           | Topics | PatchTST | MLP Mixer |
+            | -------- | -------- | -------- |
+            | Patch   | Predefined number   | Predefined list so the model learns information from different patches   |
+            | Attention block   | Yes; PatchTST applied attention mechanism to learn the context information on patches.   | No; MLP block applied. MLP block is composed by a list of linear functions   |   
     - < Blockchain Transaction Fee Forecasting: A Comparison of Machine Learning Methods > - Wavelet to decompose the data; wavelet figures are of interest and can go in the paper.
     - < Analysis of Cryptocurrency Commodities with Motifs and LSTM > - Motif to find small repeat patterns in data
+3. Answer the questions: 
+    - why PatchTST stop performing better in fine-grained data
+        - noise in dataset
+        - Pre-defined same Patch size applied to all the datasets
+    - how to imporve former's performance
+        - Multi Scale Decomposition MLP(multi-layer perceptron) mixer solved the problem with
+            - Residual loss function to learn if the data has been decomposed completely
+            - Use a list of patch sizes instead of one patch size 
+            - Multi dimensional MLP blocks to learn 
+                - Channel wise information 
+                - Inter-patch information 
+                - Inner-patch information
+        - ITransformer: inverted transformers
+            - Instead of using one data point as a token, taking whole channel as a token to learn global information
+        - Analysis of Cryptocurrency Commodities with Motifs and LSTM
+            - Matrix profile: used to find the motifs
+            - Matrix profile is combined with LSTM 
+		- Blockchain Transaction Fee Forecasting: A Comparison of Machine Learning Methods
+		    - Wavelet: used to reduce noise 
+		- FedFormer 
+		    - Discrete Fourier Transform: used to transfer data into frequency domain
+    - potential improvements
+        - ITransformer + wavelet applied on each channel 
+		- Multi dimensional MLT(multi-layer transformer) blocks to learn channel wise, inter-patch and inner-patch information
+		- Dynamic patch size: 
+            - Can Fast Fourier Transform or wavelet be used to find the most suitable patch size? 
+
+
+
+         
