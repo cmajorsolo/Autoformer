@@ -229,10 +229,7 @@
 		- FedFormer 
 		    - Discrete Fourier Transform: used to transfer data into frequency domain
     - potential improvements
-        - ITransformer + wavelet applied on each channel 
-		- Multi dimensional MLT(multi-layer transformer) blocks to learn channel wise, inter-patch and inner-patch information
-		- Dynamic patch size: 
-            - Can Fast Fourier Transform or wavelet be used to find the most suitable patch size? 
+        
 
 
 
